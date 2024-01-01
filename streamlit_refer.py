@@ -19,6 +19,8 @@ from langchain.vectorstores import FAISS
 from langchain.callbacks import get_openai_callback
 from langchain.memory import StreamlitChatMessageHistory
 
+#test ok
+
 def main():
     st.set_page_config(
     page_title="DirChat",
