@@ -152,7 +152,7 @@ def get_conversation_chain(vectorstore,openai_api_key):
 
     model_id = "kyujinpy/Ko-PlatYi-6B"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config)
+    model = AutoModelForCausalLM.from_pretrained(model_id)
 
     text_generation_pipeline = pipeline(
     model=model,
