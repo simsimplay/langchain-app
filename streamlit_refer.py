@@ -151,16 +151,8 @@ def get_vectorstore(text_chunks):
 def get_conversation_chain(vectorstore,openai_api_key):
 
     model_id = "kyujinpy/Ko-PlatYi-6B"
-
-    bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16
-)
-
     tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map="auto")
+    model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config)
 
     text_generation_pipeline = pipeline(
     model=model,
