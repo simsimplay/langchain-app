@@ -16,3 +16,4 @@ langchain
 pypdf
 sentence-transformers
 bitsandbytes
+langchain-community
