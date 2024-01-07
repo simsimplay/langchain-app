@@ -5,7 +5,13 @@ unstructured
 sentence-transformers
 faiss-cpu
 tiktoken
-openai
 pypdf
 loguru
 docx2txt
+transformers
+peft
+accelerate
+torch
+langchain
+pypdf
+sentence-transformers
