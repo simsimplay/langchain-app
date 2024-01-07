@@ -2,6 +2,10 @@ import streamlit as st
 import tiktoken
 from loguru import logger
 
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+
+
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 
@@ -18,6 +22,12 @@ from langchain.vectorstores import FAISS
 # from streamlit_chat import message
 from langchain.callbacks import get_openai_callback
 from langchain.memory import StreamlitChatMessageHistory
+
+from langchain.llms import HuggingFacePipeline
+from langchain.prompts import PromptTemplate
+from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from transformers import pipeline
+from langchain.chains import LLMChain
 
 #test ok
 
@@ -139,9 +149,54 @@ def get_vectorstore(text_chunks):
     return vectordb
 
 def get_conversation_chain(vetorestore,openai_api_key):
-    llm = ChatOpenAI(openai_api_key=openai_api_key, model_name = 'gpt-3.5-turbo',temperature=0)
+
+    model_id = "kyujinpy/Ko-PlatYi-6B"
+
+    bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config, device_map="auto")
+
+    text_generation_pipeline = pipeline(
+    model=model,
+    tokenizer=tokenizer,
+    task="text-generation",
+    temperature=0.2,
+    return_full_text=True,
+    max_new_tokens=300,
+)
+
+    prompt_template = """
+    ### [INST]
+    Instruction: Answer the question based on your knowledge.
+    Here is context to help:
+
+    {context}
+
+    ### QUESTION:
+    {question}
+
+    [/INST]
+    """
+
+    koplatyi_llm = HuggingFacePipeline(pipeline=text_generation_pipeline)
+
+    # Create prompt from prompt template
+    prompt = PromptTemplate(
+    input_variables=["context", "question"],
+    template=prompt_template,
+)
+
+# Create llm chain
+    llm_chain = LLMChain(llm=koplatyi_llm, prompt=prompt)
+
     conversation_chain = ConversationalRetrievalChain.from_llm(
-            llm=llm, 
+            llm=llm_chain, 
             chain_type="stuff", 
             retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
@@ -156,3 +211,4 @@ def get_conversation_chain(vetorestore,openai_api_key):
 
 if __name__ == '__main__':
     main()
+
