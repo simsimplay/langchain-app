@@ -148,7 +148,7 @@ def get_vectorstore(text_chunks):
     vectordb = FAISS.from_documents(text_chunks, embeddings)
     return vectordb
 
-def get_conversation_chain(vetorestore,openai_api_key):
+def get_conversation_chain(vectorstore,openai_api_key):
 
     model_id = "kyujinpy/Ko-PlatYi-6B"
 
@@ -198,7 +198,7 @@ def get_conversation_chain(vetorestore,openai_api_key):
     conversation_chain = ConversationalRetrievalChain.from_llm(
             llm=llm_chain, 
             chain_type="stuff", 
-            retriever=vetorestore.as_retriever(search_type = 'mmr', vervose = True), 
+            retriever=vectorstore.as_retriever(search_type = 'mmr', verbose = True), 
             memory=ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer'),
             get_chat_history=lambda h: h,
             return_source_documents=True,
